@@ -34,13 +34,12 @@ Metamorph, however, was not started with branching in mind, so the repository ro
 
 #### Creating branches
 
-Creating a branch in svn is easy. You can use the `svn copy` command on the command-line, specifying the remote location you want to branch from, the location you'd like to create the new branch, and a commit message describing what you're doing:
+Creating a branch in svn is easy. You can use the `svn copy` command on the command line, specifying the remote location you want to branch from, the location you'd like to create the new branch, and a commit message describing what you're doing:
 
-```
-> svn copy https://svn.server.url/repo-location/Project \
-           https://svn.server.url/repo-location/project-branches/b ranch-name \
-           -m "Created 'branch-name' branch to hold some changes."
-
+```bash
+$ svn copy https://svn.server.url/repo-location/Project \
+>          https://svn.server.url/repo-location/project-branches/branch-name \
+>          -m "Created 'branch-name' branch to hold some changes."
 Committing transaction...
 Committed revision 6448.
 ```
@@ -51,9 +50,30 @@ Alternatively, you can use the "Branch/tag" option in the Tortoise SVN GUI:
 
 #### Switching branches
 
-Usually after creating a branch, your local working copy will still be working on whatever branch it was on before (although there is a "Switch working copy to new branch/tag" option in the Tortoise SVN GUI when creating a branch, visible above).
+Usually after creating a branch, your local working copy will still be set to commit changes to whatever branch it was on before (although there is a "Switch working copy to new branch/tag" option in the Tortoise SVN GUI when creating a branch, visible above). If you're unsure about which branch your working copy is currently on, you can check via the command line using `svn info`:
 
-### Using branches in Unity
+```bash
+$ svn info --show-item=url
+https://svn.server.url/repo-location/Project
+```
+
+...or through the Tortoise SVN extension to the Windows directory properties pane:
+
+![View your current branch in Tortoise SVN](tortoise-view-current.png)
+
+To change your working copy so that changes you commit will be saved to a different branch, use the `svn switch` command:
+
+```bash
+$ svn switch https://svn.server.url/repo-location/project-branches/branch-name
+Updated to revision 6457
+```
+
+Or, use Tortoise SVN's switch dialogue:
+
+![Switch your branch in Tortoise SVN](tortoise-switch.png)
+
+
+### Using branches with Unity
 
  - Use prefabs to break scene components into separately-editable chunks.
  - Don't fear the merge. They're only YAML, so it might be okay!
