@@ -18,7 +18,7 @@ Once Metamorph has been released into Early Access and there is a live version i
 
 ## Branches and tags
 
-Branching is a feature available in most version-control systems that allows for multiple versions of the code and assets to exist side-by-side in the repository. This means that changes made to one branch do not affect others, so untested or work-in-progress commits can be made in one area of the project while preserving a known-good branch elsewhere in the repository. For a broad introduction to the concept, I'd recommend [Jeff Atwood's blog post][1]<sup>1</sup> describing branches in version control by using the idea of "parallel universes" as an analogy.
+Branching is a feature available in most version-control systems that allows for multiple versions of the code and assets to exist side-by-side in the repository. This means that changes made to one branch do not affect others, so untested or work-in-progress commits can be made in one area of the project while preserving a known-good branch elsewhere in the repository. For a broad introduction to the concept, I'd recommend [Jeff Atwood's blog post][Atwood]<sup>1</sup> describing branches in version control by using the idea of "parallel universes" as an analogy.
 
 Tags are a similar concept to branches, but they are intended to be immutable. That is, once you have created a parallel version of your code by tagging it, you will never commit any further changes to the tagged version, meaning it continues to exist in its original state (with bugs and all) forever. The main use for tags is to be able to refer back to specific named versions of the code at a future date. For example, you might tag the revision of your code that was released as v1.3 as "1.3" so that, even after releasing 1.4 or 1.5, you can still easily jump back to the state of the code in 1.3 to track down bugs reported in the older version (or to find out why something that was working then isn't any more...).
 
@@ -32,14 +32,23 @@ SVN treats branches as "copies" of the original code that exist within a differe
 
 Metamorph, however, was not started with branching in mind, so the repository root instead contains several directories containing things like build server output, art assets and design docs. The Unity project itself lives within the `/Project` directory. Fortunately, because SVN just treats branches as directories, we can just store them anywhere we like in the repo. I've already created a `/project-branches` directory in the root which can be used to hold branches of the `/Project` directory. I suggest we also add a `/project-tags` directory to hold tagged versions in future.
 
+The following sections aim to provide a quick introduction to creating, switching and merging branches in SVN. If you would like a more complete guide to branches and merging, I recommend [Chapter 4 ("Branching and Merging") of the SVN book][svnbook]<sup>2</sup>. The commands used for merging altered significantly in version 1.8 (they now automatically detect certain types of merge), so the following instructions (and the linked version of the SVN book) assume that you are using a version of SVN more recent than v1.8. You can check the version you are using with `svn --version` on the command line:
+
+```
+$ svn --version
+svn, version 1.9.5 (r1770682)
+   compiled Nov 26 2016, 14:22:31 on x86-microsoft-windows
+```
+Or by using the about command in Tortoise SVN:
+
+![View svn version in Tortoise SVN](tortoise-version.png)
+
 #### Creating branches
 
 Creating a branch in svn is easy. You can use the `svn copy` command on the command line, specifying the remote location you want to branch from, the location you'd like to create the new branch, and a commit message describing what you're doing:
 
-```bash
-$ svn copy https://svn.server.url/repo-location/Project \
->          https://svn.server.url/repo-location/project-branches/branch-name \
->          -m "Created 'branch-name' branch to hold some changes."
+```
+$ svn copy ^/Project ^/project-branches/branch-name -m "Created 'branch-name' branch."
 Committing transaction...
 Committed revision 6448.
 ```
@@ -52,7 +61,7 @@ Alternatively, you can use the "Branch/tag" option in the Tortoise SVN GUI:
 
 Usually after creating a branch, your local working copy will still be set to commit changes to whatever branch it was on before (although there is a "Switch working copy to new branch/tag" option in the Tortoise SVN GUI when creating a branch, visible above). If you're unsure about which branch your working copy is currently on, you can check via the command line using `svn info`:
 
-```bash
+```
 $ svn info --show-item=url
 https://svn.server.url/repo-location/Project
 ```
@@ -63,8 +72,8 @@ https://svn.server.url/repo-location/Project
 
 To change your working copy so that changes you commit will be saved to a different branch, use the `svn switch` command:
 
-```bash
-$ svn switch https://svn.server.url/repo-location/project-branches/branch-name
+```
+$ svn switch ^/project-branches/branch-name
 Updated to revision 6457
 ```
 
@@ -72,6 +81,59 @@ Or, use Tortoise SVN's switch dialogue:
 
 ![Switch your branch in Tortoise SVN](tortoise-switch.png)
 
+Note that switching the branch of your working copy like this has two effects:
+
+1. It changes the branch to which any changes you make will be committed.
+2. It alters the files in your working copy so that they match the state of the most recent revision on the target branch.
+
+The mechanism for the second effect is the same as that used during a normal `svn update`, so it will try to preserve uncommitted changes in your working copy, if you have any, and may therefore merge files (and generate merge conflicts) just as a normal update would. While it's probably not a great idea to make a habit of switching branches with uncommitted changes in your working copy, this does mean that you can make the decision that some potentially unstable work would be better off on a new branch _after_ making the changes locally.
+
+Once your working copy is switched over to the correct branch, you can continue to work and commit changes as normal. Note that when updating, you will not receive changes that have been committed to other branches, and people working on other branches will not receive your changes. When you're ready to combine your changes with another branch, that's where merging comes in.
+
+#### Merging branches
+
+Imagine you've been working on a branch - call it A - and want to merge your changes back into the main development branch - we'll call that B. The procedure looks like this:
+
+1. Make sure that you don't have any uncommitted changes left in your working copy.
+1. Switch your working copy to branch B, getting any updates that others have committed to it since you branched off.
+1. Merge branch A into your (now B-based) working copy.
+1. Check that the merge has worked, compile, build, run tests, resolve conflicts and generally make sure nothing's broken.
+1. Commit your local changes.
+1. (Optionally) Delete branch A.
+
+To actually perform the merge (Step 3), you can use the `svn merge` command:
+
+```
+$ svn merge ^/project-branches/branch-name
+--- Merging differences between repository URLs into '.':
+U    Main.scene
+U    Code/Globals.cs
+--- Recording mergeinfo for merge between repository URLs into '.':
+ U   .
+```
+
+In Tortoise SVN, you can use the merge dialogue instead:
+
+![Merge dialogue step 1](tortoise-merge-1.png)
+
+While there are a couple of steps to the merge dialogue, in most cases the default options are fine:
+
+![Merge dialogue step 2](tortoise-merge-2.png)
+
+After resolving any merge conflicts and testing the project, you must then commit as normal to save your changes to the target branch (branch B in the example).
+
+Once you commit, your changes will be available to other people using the target branch, and individual commits you made while on the source branch (A in the example) will be visible in the changelog for the target branch, using the "Include merged revisions" checkbox in Tortoise SVN:
+
+![Commit log post-merge](tortoise-post-merge-log.png)
+
+After merging changes from a branch, in most situations it's a good idea to delete the branch, using either the `svn delete` command or the Tortoise SVN repository browser.
+
+```
+$ svn delete ^/project-branches/branch-name \
+             -m "Removed branch-name, after reintegrating with trunk ."
+```
+
+This deletes the directory holding the branch, which helps to keep the repository clean and clear for other users. The commit history from the deleted branch is still available as part of the repo history as for any other deleted file, in case you ever need it.
 
 ### Using branches with Unity
 
@@ -81,7 +143,7 @@ Or, use Tortoise SVN's switch dialogue:
 
 ## The Strategy
 
-The strategy described here and the images used to illustrate it are stolen more-or-less wholesale from [Vincent Driessen's excellent 2010 blog post][2]<sup>2</sup> about a branching strategy he was using for git. The only changes I have made are to describe its use with SVN instead of git.
+The strategy described here and the images used to illustrate it are stolen more-or-less wholesale from [Vincent Driessen's excellent 2010 blog post][Driessen]<sup>3</sup> about a branching strategy he was using for git. The only changes I have made are to describe its use with SVN instead of git.
 
 ![Branching overview](overview.png)
 
@@ -101,14 +163,15 @@ The strategy described here and the images used to illustrate it are stolen more
 
 ## References
 
-1. [Software branching and parallel universes][1], Jeff Atwood, _Coding Horror_, Oct 2007
-1. [A successful git branching model][2], Vincent Driessen, _nvie.com_, January 2010
-1. [Project organization is no monster][3], Bruno Croci, _Made With Unity_, January 2017
-1. [Version control: Effective use, issues and thoughts, from a gamedev perspective][4], Ash Davis, _Gamasutra_, Nov 2016
-1. [Chapter 4. Branching and Merging][5], Ben Collins-Sussman, Brian W. Fitzpatrick & C. Michael Pilato, _Version Control with Subversion (for Subversion 1.7)_, 2013
+1. [Software branching and parallel universes][Atwood], Jeff Atwood, _Coding Horror_, Oct 2007
+1. [Chapter 4. Branching and Merging][svnbook], Ben Collins-Sussman, Brian W. Fitzpatrick & C. Michael Pilato, _Version Control with Subversion (for Subversion 1.8)_, 2016
+1. [A successful git branching model][Driessen], Vincent Driessen, _nvie.com_, January 2010
+1. [Project organization is no monster][Croci], Bruno Croci, _Made With Unity_, January 2017
+1. [Version control: Effective use, issues and thoughts, from a gamedev perspective][Davis], Ash Davis, _Gamasutra_, Nov 2016
 
-[1]: https://blog.codinghorror.com/software-branching-and-parallel-universes/
-[2]: http://nvie.com/posts/a-successful-git-branching-model/
-[3]: https://madewith.unity.com/en/stories/project-organization-is-no-monster
-[4]: http://www.gamasutra.com/blogs/AshDavis/20161011/283058/Version_control_Effective_use_issues_and_thoughts_from_a_gamedev_perspective.php#usingversioncontroleffectively
-[5]: http://svnbook.red-bean.com/en/1.7/svn.branchmerge.using.html
+
+[Atwood]: https://blog.codinghorror.com/software-branching-and-parallel-universes/
+[Driessen]: http://nvie.com/posts/a-successful-git-branching-model/
+[Croci]: https://madewith.unity.com/en/stories/project-organization-is-no-monster
+[Davis]: http://www.gamasutra.com/blogs/AshDavis/20161011/283058/Version_control_Effective_use_issues_and_thoughts_from_a_gamedev_perspective.php#usingversioncontroleffectively
+[svnbook]: http://svnbook.red-bean.com/en/1.8/svn.branchmerge.html
