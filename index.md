@@ -137,15 +137,15 @@ This deletes the directory holding the branch, which helps to keep the repositor
 
 ### Using branches with Unity
 
- - Use prefabs to break scene components into separately-editable chunks.
- - Don't fear the merge. They're only YAML, so it might be okay!
- - It isn't always, though, so use a "social" locking system. This is far from perfect, but it's probably the lowest-overhead solution for a small team.
+Unity's integration with SVN is not especially elegant, so the specifics of how SVN branch operations affect Unity projects probably bears some discussion here. The main point to remember is that, as far as we're concerned, branch merge operations use the same mechanism to detect and resolve conflicts as a normal SVN update. That means that everything you were doing before to avoid merge issues with Unity scenes and prefabs in normal SVN use applies to branch merges as well. For instance, where possible, use prefabs to break scene components down into smaller, separately-editable chunks that people can make changes to without affecting the entire scene.
+
+Even if you do end up making changes to a file that someone else has edited and get a conflict when you try to merge, that doesn't mean you have to scrap your changes. By setting the project to use text-based asset serialization (in Edit -> Project settings -> Editor), all scene and prefab files are stored as YAML, a text-based format that SVN's normal diff and merge tools ought to be able to handle most small changes to automatically. As a result, even if you get a merge conflict, it's worth examining conflicted scene and prefab files in an editor (Tortoise SVN has a good one available by right-clicking the conflict in the merge log and selecting "Edit conflicts") and attempting to manually resolve differences between the files. Often it comes down to some unimportant property of the scene or prefab (like a file ID) where the value from either changeset would be fine.
+
+Large-scale changes to scenes and prefabs can result in unresolvable merge issues, though, so in general, it's probably a good idea to avoid making changes to a scene or prefab while someone else is working on it. This applies even when working in branches, and in fact is made worse, because you'll need to wait for whatever branch the changes are on to be merged with whatever branch you're working from before you can safely edit the scene/prefab (alternatively, you can just switch to the branch with the changes and make your edits there). There aren't really any perfect systems for managing this kind of collaborative clash (although [this article][Croci]<sup>3</sup> describes a great scene locking system based on physical items that I find very pleasing). For a small, distributed team like us, the best solutions are going to be communicating via Skype when we're about to make significant changes to a scene or prefab, and making sure to organise the project into as small components as is sensible, to reduce the probability of two people needing to make changes to the same file in the first place.
 
 ## The Strategy
 
-The strategy described here and the images used to illustrate it are stolen more-or-less wholesale from [Vincent Driessen's excellent 2010 blog post][Driessen]<sup>3</sup> about a branching strategy he was using for git. The only changes I have made are to describe its use with SVN instead of git.
-
-![Branching overview](overview.png)
+The strategy described here and the images used to illustrate it are stolen more-or-less wholesale from [Vincent Driessen's excellent 2010 blog post][Driessen]<sup>4</sup> about a branching strategy he was using for git. The only changes I have made are to describe its use with SVN instead of git.
 
 ### Main branches
 
@@ -161,12 +161,16 @@ The strategy described here and the images used to illustrate it are stolen more
 
 ![Hotfix branches](hotfix-branches.png)
 
+### Putting it all together
+
+![Branching overview](overview.png)
+
 ## References
 
 1. [Software branching and parallel universes][Atwood], Jeff Atwood, _Coding Horror_, Oct 2007
 1. [Chapter 4. Branching and Merging][svnbook], Ben Collins-Sussman, Brian W. Fitzpatrick & C. Michael Pilato, _Version Control with Subversion (for Subversion 1.8)_, 2016
-1. [A successful git branching model][Driessen], Vincent Driessen, _nvie.com_, January 2010
 1. [Project organization is no monster][Croci], Bruno Croci, _Made With Unity_, January 2017
+1. [A successful git branching model][Driessen], Vincent Driessen, _nvie.com_, January 2010
 1. [Version control: Effective use, issues and thoughts, from a gamedev perspective][Davis], Ash Davis, _Gamasutra_, Nov 2016
 
 
