@@ -145,17 +145,41 @@ Large-scale changes to scenes and prefabs can result in unresolvable merge issue
 
 ## The Strategy
 
-The strategy described here and the images used to illustrate it are stolen more-or-less wholesale from [Vincent Driessen's excellent 2010 blog post][Driessen]<sup>4</sup> about a branching strategy he was using for git. The only changes I have made are to describe its use with SVN instead of git.
+The branching strategy described here and the images used to illustrate it are stolen more-or-less wholesale from [Vincent Driessen's excellent 2010 blog post][Driessen]<sup>4</sup> about a branching strategy he was using for git. I have abbreviated it somewhat here, and removed or modified the sections that are specific to git.
 
 ### Main branches
 
+The core of the strategy is two branches with an infinite lifetime:
+
+ - The master branch, stored at `/Project` (i.e. the trunk directory), which is the version that is used for production builds, so should always be in a _production-ready_ state.
+ - The development branch, stored at `/project-branches/development`, which is the branch in which development work is combined before being turned into a release. It should always reflect a state with the latest delivered development changes for the next release.
+
 ![Main branches](main-branches.png)
+
+When the source code in the develop branch reaches a stable point and is ready to be released, all of the changes should be merged back into the master branch somehow and then tagged with a release number (e.g. `/project-tags/1.4`). To allow QA some time to test the build before it goes live, however, we will introduce a third, "release" branch between the two.
 
 ### Release branches
 
+A release branch is a temporary branch created as a staging area for the final preparations before deploying a build. It should be created from the development branch at the point at which all features for the next release are present, and named for the target release version (e.g. `/project-branches/release-1.4`).
+
+Builds can then be created from this branch and used for testing, while work on new features continues on the development branch. Changes made to the release branch should be minimal, and limited to:
+ - Minor bugfixes
+ - Setting environment-specific metadata (e.g. changing Steam payments from sandbox mode to live, disabling debug menus)
+ - Setting the version number
+
+Design changes at this point are strictly prohibited - those should instead be committed to the development branch to go out in the _next_ version. A release branch should have a short lifespan: only as long as is needed to sign off on the build as stable and ready for release.
+
+Once the code on a release branch is ready for deployment, it should be merged into the master branch, and the resulting revision on the master should be tagged for future reference. After that, the release branch should be immediately merged into the development branch, to preserve any bugfixes that were made to the branch. If this merge overwrites environment-specific metadata in the development branch with production values, it is important to remember to revert those changes at this point. After that, the release branch has served its purpose and should be deleted.
+
 ### Feature branches
 
+Feature branches are used to develop new features for a future release. When starting development of a feature, the target release in which the feature will be incorporated may be unknown, and development may take longer than the time until the next release. By developing the feature on a separate branch (rather than committing to develop), we prevent half-finished and unstable features from blocking a scheduled release.
+
 ![Feature branches](feature-branches.png)
+
+The essence of a feature branch is that it exists as long as the feature is in development, but will eventually be merged back into the development branch (to definitely add the new feature to the upcoming release) or discarded (in case of a disappointing experiment).
+
+A new feature branch should be created from the current state of the development branch and should merge back into the development branch when complete. After being re-integrated, the feature branch should be deleted.
 
 ### Hotfix branches
 
