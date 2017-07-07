@@ -183,11 +183,31 @@ A new feature branch should be created from the current state of the development
 
 ### Hotfix branches
 
+In an ideal world, signing a release as stable would mean that the build was completely bug-free. In the real world, bugs - even critical ones - sometimes slip through the cracks. Hotfix branches are a way to address problems in released builds in a timely fashion.
+
 ![Hotfix branches](hotfix-branches.png)
 
-### Putting it all together
+When a critical bug in a production version must be resolved immediately, a hotfix branch may be branched off from the corresponding tag on the master branch that marks the production version. the hotfix branch should be named for the new version number that it will eventually create (e.g. `/project-branches/hotfix-1.4.1`). The essence is that work of team members on the develop branch can continue, while another person is preparing a quick production fix.
+
+When finished, the bugfix needs to be merged back into master and tagged with a new version number. It also needs to be merged back into develop, in order to safeguard that the bugfix is included in the next release as well. After that, the hotfix branch can be deleted. This is identical to how release branches are finished.
+
+### Summary
+
+This branching strategy uses a total of five branch types: two core branches that exist perpetually in parallel, and three types of supporting branches that are used to manage and move changes between them.
+
+Branch type | Branches off from | Merges back into       | Naming convention
+----------- | ----------------- | ---------------------- | -----------------
+Master      | -                 | -                      | `/Project`
+Development | Master (once)     | Release branches       | `/project-branches/development`
+Release     | Development       | Master and Development | `/project-branches/release-*`
+Feature     | Development       | Development            | `/project-branches/*`
+Hotfix      | Master            | Master and Development | `/project-branches/hotfix-*`
+
+The following diagram depicts all of the various types of branch and their relationships in all their glory, along with some example usage:
 
 ![Branching overview](overview.png)
+
+While this arrangement of branches may appear complicated when presented all together in this format, in practice few members of the team are likely to need to concern themselves with the current state of every branch at any one time. That, in fact, is its advantage: developers working on new features need not worry about breaking the test build for the next release, and hotfixes can be deployed rapidly without waiting for new development to be put on hold. I am confident that with a concerted effort to adopt this method of working, it will rapidly become second-nature.
 
 ## References
 
@@ -196,6 +216,7 @@ A new feature branch should be created from the current state of the development
 1. [Project organization is no monster][Croci], Bruno Croci, _Made With Unity_, January 2017
 1. [A successful git branching model][Driessen], Vincent Driessen, _nvie.com_, January 2010
 1. [Version control: Effective use, issues and thoughts, from a gamedev perspective][Davis], Ash Davis, _Gamasutra_, Nov 2016
+    - While I haven't specifically cited this article in the above document, and the branch/fork strategy described therein is unsuitable for use on a project with a production build in the wild, I feel that it nonetheless offers a useful primer on good version control habits in game development.
 
 
 [Atwood]: https://blog.codinghorror.com/software-branching-and-parallel-universes/
