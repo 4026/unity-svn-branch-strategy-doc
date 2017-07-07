@@ -1,5 +1,5 @@
 ---
-title: Metamorph Branch strategy
+title: Metamorph Branch Strategy
 ---
 
 ## Contents
