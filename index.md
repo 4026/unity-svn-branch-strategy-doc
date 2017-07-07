@@ -1,3 +1,21 @@
+## Contents
+
+- [Introduction](#introduction)
+  - [The Problem](#the-problem)
+- [Branches and tags](#branches-and-tags)
+  - [Using branches in SVN](#using-branches-in-svn)
+    - [Creating branches](#creating-branches)
+    - [Switching branches](#switching-branches)
+    - [Merging branches](#merging-branches)
+  - [Using branches with Unity](#using-branches-with-unity)
+- [The Strategy](#the-strategy)
+  - [Main branches](#main-branches)
+  - [Release branches](#release-branches)
+  - [Feature branches](#feature-branches)
+  - [Hotfix branches](#hotfix-branches)
+  - [Summary](#summary)
+- [References](#references)
+
 ## Introduction
 
 Metamorph is a Unity project that has been under active development for more than two years, in the hands of a wide cast of developers. During that time, changes to the code and assets have been stored and shared in a SVN repository. This approach has been broadly successful for in-house development and producing builds to demo at game industry shows, but with a Steam Early Access release planned for September 2017, we will shortly be required to maintain at least two different versions of the game: a stable (or, least, broadly playable) one that is available via Steam to paying customers, and a potentially unstable, buggy one with new, untested features that is only visible within Firefly. This increased complexity of production requirements will in turn require more involved strategies to manage changes to the project.
