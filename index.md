@@ -19,6 +19,11 @@ title: Metamorph Branch Strategy
   - [Hotfix branches](#hotfix-branches)
   - [Summary](#summary)
 - [References](#references)
+- [Appendices](#appendices)
+  - [A: Release branch checklist](#a_-release-branch-checklist)
+   - [Creating a release branch](#creating-a-release-branch)
+   - [Fixing a bug](#fixing-a-bug)
+   - [Deploying a release](#deploying-a-release)
 
 ## Introduction
 
@@ -244,3 +249,29 @@ While this arrangement of branches may appear complicated when presented all tog
 [Croci]: https://madewith.unity.com/en/stories/project-organization-is-no-monster
 [Davis]: http://www.gamasutra.com/blogs/AshDavis/20161011/283058/Version_control_Effective_use_issues_and_thoughts_from_a_gamedev_perspective.php#usingversioncontroleffectively
 [svnbook]: http://svnbook.red-bean.com/en/1.8/svn.branchmerge.html
+
+## Appendices
+
+### A: Release branch checklist
+
+#### Creating a release branch
+1. [**All contributors**] Make sure that the code in the development branch is reasonably "clean" with no half-finished features.
+1. [**Branchmaster**] Communicate with other team members (and the development branch log) to ensure that the development branch is ready to be branched to release. _In theory_ this shouldn't be necessary, because everyone should be assembling half-finished features in separate branches, but  it doesn't hurt to be sure.
+1. [**Branchmaster**] Create a new branch from the development branch, located in `/project-branches/release-x.y` (where `x.y` is the appropriate version number).
+1. [**Branchmaster**] Switch onto the new release branch, and update the version number of the project to reflect the new version number of the branch.
+1. [**Branchmaster**] Notify QA that they can begin testing the release build.
+
+#### Fixing a bug
+1. [**Developer**] Switch onto the release branch.
+1. [**Developer**] Fix the bug, test and commit the fix to the release branch.
+1. [**Developer**] Switch back to the development branch.
+1. [**Developer**] _(optional)_ Merge the change back into the development branch, if it's something that will need to be fixed on the development branch imminently.
+
+#### Deploying a release
+1. [**Branchmaster**] Switch to trunk.
+1. [**Branchmaster**] Merge changes from the release branch into trunk.
+1. [**Branchmaster**] Create a new tag from the current revision on trunk, located in `project-tags/x.y` (where `x.y` is the appropriate version number).
+1. [**Branchmaster**] Switch to development.
+1. [**Branchmaster**] Merge any pending changes from the release branch into development. The exact number of changes to merge here will depend upon how assiduously developers have been merging their fixes back into the development branch during the life of the release branch, but there should be at least one unmerged change: the update to the project version number when the branch was created.
+1. [**Branchmaster**] Notify Production that they can deploy the release build.
+1. [**Branchmaster**] Delete the `/project-branches/release-x.y` branch.
