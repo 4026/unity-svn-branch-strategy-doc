@@ -20,10 +20,10 @@ title: Metamorph Branch Strategy
   - [Summary](#summary)
 - [References](#references)
 - [Appendices](#appendices)
-  - [A: Release branch checklist](#a_-release-branch-checklist)
-   - [Creating a release branch](#creating-a-release-branch)
-   - [Fixing a bug](#fixing-a-bug)
-   - [Deploying a release](#deploying-a-release)
+  - [A: Release branch checklist](#a-release-branch-checklist)
+    - [Creating a release branch](#creating-a-release-branch)
+    - [Fixing a bug](#fixing-a-bug)
+    - [Deploying a release](#deploying-a-release)
 
 ## Introduction
 
